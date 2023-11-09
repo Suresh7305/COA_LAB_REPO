@@ -1,2 +1,5 @@
-![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/cd4b0c97-cf75-49fb-a1c8-fd408bee982f)
-endsem project: kernal aware warp scheduler and warp sharing mechanism
+endsem project: kernal aware warp scheduler and warp sharing mechanism.
+
+
+kernal awareness : checks the last issued cta to switch from age based to progress based warp scheduling to prevent gpu underutilization
+warp sharing : oparend collector units are shared between warp schedulers to maximize the performance.
