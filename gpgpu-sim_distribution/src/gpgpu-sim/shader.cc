@@ -47,20 +47,11 @@
 #include "stat-tool.h"
 #include "traffic_breakdown.h"
 #include "visualizer.h"
-//#include <stdio.h>
 
 #define PRIORITIZE_MSHR_OVER_WB 1
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define MIN(a, b) (((a) < (b)) ? (a) : (b)) 
-  unsigned v_others=0; 
-  unsigned v_waiting=0; 
-  unsigned v_issued=0; 
-  unsigned v_xalu=0; 
-  unsigned v_xmem=0;
- int count=0;
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-
-//fprintf(fout, "gpgpu_n_intrawarp_mshr_merge \n");
 mem_fetch *shader_core_mem_fetch_allocator::alloc(
     new_addr_type addr, mem_access_type type, unsigned size, bool wr,
     unsigned long long cycle) const {
@@ -1137,8 +1128,7 @@ void scheduler_unit::order_by_priority(
 }
 
 void scheduler_unit::cycle() {
-  SCHED_DPRINTF("scheduler_unit::cycle()\n"); 
-  //fprintf(stderr, "cycle function \n");
+  SCHED_DPRINTF("scheduler_unit::cycle()\n");
   bool valid_inst =
       false;  // there was one warp with a valid instruction to issue (didn't
               // require flush due to control hazard)
@@ -1168,20 +1158,16 @@ void scheduler_unit::cycle() {
                                                  // units (as in Maxwell and
                                                  // Pascal)
 
-    if (warp(warp_id).ibuffer_empty()||warp(warp_id).waiting())
-     {  
+    if (warp(warp_id).ibuffer_empty())
       SCHED_DPRINTF(
           "Warp (warp_id %u, dynamic_warp_id %u) fails as ibuffer_empty\n",
-          (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());	 
-          
-          ++v_others; 
-     }
+          (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());
 
-    /*if (warp(warp_id).waiting())
+    if (warp(warp_id).waiting())
       SCHED_DPRINTF(
           "Warp (warp_id %u, dynamic_warp_id %u) fails as waiting for "
           "barrier\n",
-          (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());    */     //1161 to 1170 for others warp state..
+          (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());
 
     while (!warp(warp_id).waiting() && !warp(warp_id).ibuffer_empty() &&
            (checked < max_issue) && (checked <= issued) &&
@@ -1210,9 +1196,7 @@ void scheduler_unit::cycle() {
               "Warp (warp_id %u, dynamic_warp_id %u) control hazard "
               "instruction flush\n",
               (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());
-          // control hazard 
-          ++v_waiting; 
-          //fprintf(stderr,"warp_id %u  is in waiting state (control hazard)\n",(*iter)->get_warp_id());
+          // control hazard
           warp(warp_id).set_next_pc(pc);
           warp(warp_id).ibuffer_flush();
         } else {
@@ -1221,7 +1205,7 @@ void scheduler_unit::cycle() {
             SCHED_DPRINTF(
                 "Warp (warp_id %u, dynamic_warp_id %u) passes scoreboard\n",
                 (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());
-            ready_inst = true; //else of this if is waiting state
+            ready_inst = true;
 
             const active_mask_t &active_mask =
                 m_shader->get_active_mask(warp_id, pI);
@@ -1242,11 +1226,6 @@ void scheduler_unit::cycle() {
                 issued_inst = true;
                 warp_inst_issued = true;
                 previous_issued_inst_exec_type = exec_unit_type_t::MEM;
-              } //for knowing Xmem. else of this if gives Xmem case 
-              else 
-              { 
-                 ++v_xmem; 
-                 //fprintf(stderr,"warp_id %u  is in xmem state\n",(*iter)->get_warp_id());
               }
             } else {
               bool sp_pipe_avail =
@@ -1287,9 +1266,8 @@ void scheduler_unit::cycle() {
                            pI->op == SP_OP)) &&
                          !(diff_exec_units && previous_issued_inst_exec_type ==
                                                   exec_unit_type_t::SP))
-                  execute_on_SP = true; 
-                  
-		//here else of this if and else if is one of the Xalu case
+                  execute_on_SP = true;
+
                 if (execute_on_INT || execute_on_SP) {
                   // Jin: special for CDP api
                   if (pI->m_is_cdp && !warp(warp_id).m_cdp_dummy) {
@@ -1306,8 +1284,7 @@ void scheduler_unit::cycle() {
                           m_shader->m_config->gpgpu_ctx->func_sim
                                   ->cdp_latency[pI->m_is_cdp] *
                               active_mask.count();
-                    warp(warp_id).m_cdp_dummy = true; 
-                    
+                    warp(warp_id).m_cdp_dummy = true;
                     break;
                   } else if (pI->m_is_cdp && warp(warp_id).m_cdp_dummy) {
                     assert(warp(warp_id).m_cdp_latency == 0);
@@ -1329,11 +1306,6 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::INT;
-                } 
-                      else 
-                {
-                    ++v_xalu; 
-                    //fprintf(stderr,"warp_id %u is in xalu state\n"); 
                 }
               } else if ((m_shader->m_config->gpgpu_num_dp_units > 0) &&
                          (pI->op == DP_OP) &&
@@ -1346,13 +1318,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::DP;
-                }  
-                else 
-                {
-                    ++v_xalu; 
-                    //fprintf(stderr,"warp_id %u is in xalu state\n"); 
                 }
-                
               }  // If the DP units = 0 (like in Fermi archi), then execute DP
                  // inst on SFU unit
               else if (((m_shader->m_config->gpgpu_num_dp_units == 0 &&
@@ -1367,11 +1333,6 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::SFU;
-                } 
-                else 
-                {
-                    ++v_xalu; 
-                    //fprintf(stderr,"warp_id %u is in xalu state\n"); 
                 }
               } else if ((pI->op == TENSOR_CORE_OP) &&
                          !(diff_exec_units && previous_issued_inst_exec_type ==
@@ -1383,8 +1344,7 @@ void scheduler_unit::cycle() {
                   issued_inst = true;
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type = exec_unit_type_t::TENSOR;
-                } 
-                
+                }
               } else if ((pI->op >= SPEC_UNIT_START_ID) &&
                          !(diff_exec_units &&
                            previous_issued_inst_exec_type ==
@@ -1406,21 +1366,15 @@ void scheduler_unit::cycle() {
                   warp_inst_issued = true;
                   previous_issued_inst_exec_type =
                       exec_unit_type_t::SPECIALIZED;
-                }  
-                
-                
-              }  //add else for getting Xalu. 
-              
-              
+                }
+              }
 
             }  // end of else
           } else {
             SCHED_DPRINTF(
                 "Warp (warp_id %u, dynamic_warp_id %u) fails scoreboard\n",
-                (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id()); 
-                ++v_waiting; 
-                //fprintf(stderr,"warp_id %u  is in waiting state(data hazard)\n",(*iter)->get_warp_id());
-          } //waiting
+                (*iter)->get_warp_id(), (*iter)->get_dynamic_warp_id());
+          }
         }
       } else if (valid) {
         // this case can happen after a return instruction in diverged warp
@@ -1439,9 +1393,7 @@ void scheduler_unit::cycle() {
       }
       checked++;
     }
-    if (issued) 
-    {   v_issued+=issued; 
-        //fprintf(stderr,"warp_id %u  is in issued state\n",(*iter)->get_warp_id());
+    if (issued) {
       // This might be a bit inefficient, but we need to maintain
       // two ordered list for proper scheduler execution.
       // We could remove the need for this loop by associating a
@@ -1474,9 +1426,7 @@ void scheduler_unit::cycle() {
     m_stats->shader_cycle_distro[1]++;  // waiting for RAW hazards (possibly due
                                         // to memory)
   else if (!issued_inst)
-    m_stats->shader_cycle_distro[2]++;  // pipeline stalled 
-    
-   //fprintf(stderr," %u ,%u,%u,%u,%u\n",v_others,v_waiting,v_xalu,v_xmem,v_issued);
+    m_stats->shader_cycle_distro[2]++;  // pipeline stalled
 }
 
 void scheduler_unit::do_on_warp_issued(
@@ -2839,14 +2789,6 @@ void gpgpu_sim::shader_print_scheduler_stat(FILE *fout,
 }
 
 void gpgpu_sim::shader_print_cache_stats(FILE *fout) const {
-	++count;
-	fprintf(stderr,"Warp states count for kernel %d:\n",count);
-	    fprintf(stderr," waiting=%u ,issued =%u,Xalu=%u,Xmem=%u,Xothers=%u\n\n",v_waiting,v_issued,v_xalu,v_xmem,v_others); 
-	   v_others=0; 
-	   v_waiting=0; 
-	   v_issued=0; 
-	   v_xalu=0; 
-	   v_xmem=0;
   // L1I
   struct cache_sub_stats total_css;
   struct cache_sub_stats css;
