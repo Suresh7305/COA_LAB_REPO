@@ -6,10 +6,15 @@ kernal awareness : checks the last issued cta to switch from age based to progre
 warp sharing : oparend collector units are shared between warp schedulers to maximize the performance.
 
 On execution of kaws, the following are the comparisions of performances:
+IPC evaluation:
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/9666c761-f832-4a72-9dd1-f9e61f275f62)
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/b2364816-c75b-4f16-8739-f014d19fab20)
+
+gpu_tot_sim_cycle:
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/6669cc0e-df29-4a45-8a26-6fd00d07fdb5)
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/42f2548d-6960-4b9c-8933-c703b8fa97e6)
+
+stalls evaluation:
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/2cee1618-078a-487c-ad2c-0dc93063de9c)
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/7534f00c-a54f-4196-ac34-e484d8c8f3c5)
 
