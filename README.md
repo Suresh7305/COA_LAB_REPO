@@ -10,11 +10,11 @@ On execution of kaws, the following are the comparisions of performances:
 IPC evaluation:
 
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/9666c761-f832-4a72-9dd1-f9e61f275f62)
-![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/b2364816-c75b-4f16-8739-f014d19fab20)
+![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/6669cc0e-df29-4a45-8a26-6fd00d07fdb5)
 
 gpu_tot_sim_cycle:
 
-![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/6669cc0e-df29-4a45-8a26-6fd00d07fdb5)
+![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/b2364816-c75b-4f16-8739-f014d19fab20)
 ![image](https://github.com/Suresh7305/COA_LAB_REPO/assets/140541932/42f2548d-6960-4b9c-8933-c703b8fa97e6)
 
 stalls evaluation:
